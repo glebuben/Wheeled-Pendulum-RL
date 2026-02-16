@@ -179,6 +179,7 @@ from wheel_pole_system import WheelPoleSystem
 
 # Create environment
 env = WheelPoleSystem(rod_length=1.0, wheel_radius=0.2)
+refward_func = lambda prev_state, action, new_state: np.cos(new_state[2])
 
 # RL training loop
 for episode in range(num_episodes):
@@ -191,11 +192,8 @@ for episode in range(num_episodes):
         action = policy(state)  # Returns torque
         
         # Step environment
-        next_state = env.step(action)
-        
-        # Calculate reward (e.g., pole upright)
-        reward = np.cos(next_state[2])  # Reward for keeping pole vertical
-        
+        next_state, reward = env.step(action, reward_func)
+
         # Store transition, update policy, etc.
         # ...
 ```

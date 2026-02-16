@@ -135,7 +135,7 @@ class WheelPoleSystem:
         
         return [phi_dot, phi_ddot, theta_dot, theta_ddot]
     
-    def step(self, action):
+    def step(self, action, reward_func=lambda prev_state, action, new_state: -1):
         """
         Apply an action (torque) and simulate one time step.
         
@@ -143,21 +143,30 @@ class WheelPoleSystem:
         -----------
         action : float
             Torque applied to the wheel (N⋅m)
+        reward_func : callable, optional
+            Function to calculate reward: reward_func(prev_state, action, new_state) -> float
+            Default returns -1 (constant penalty per step)
             
         Returns:
         --------
-        state : np.ndarray
+        new_state : np.ndarray
             Current state [phi, phi_dot, theta, theta_dot]
+        reward : float
+            Reward value computed by reward_func
         """
         # Integrate the equations of motion
         t_span = [0, self.dt]
         solution = odeint(self._dynamics, self.state, t_span, args=(action,))
         
+        prev_state = self.state.copy()
         self.state = solution[-1]
         self.time += self.dt
         self.step_count += 1
         
-        return self.state.copy()
+        new_state = self.state.copy()
+        reward = reward_func(prev_state, action, new_state)
+
+        return new_state, reward
     
     def get_state(self):
         """
@@ -235,8 +244,13 @@ if __name__ == "__main__":
     print("Initial state:", system.get_state())
     print("Step:", system.get_current_step())
     
+    # Define a reward function (example: reward for keeping pole upright)
+    def upright_reward(prev_state, action, new_state):
+        theta = new_state[2]
+        return np.cos(theta)  # Maximum reward when theta = 0 (upright)
+    
     # Simulate with no control
     for i in range(100):
-        state = system.step(action=0.0)
+        state, reward = system.step(action=0.0, reward_func=upright_reward)
         if i % 20 == 0:
-            print(f"Step {system.get_current_step()}: phi={state[0]:.3f}, theta={state[2]:.3f}")
+            print(f"Step {system.get_current_step()}: phi={state[0]:.3f}, theta={state[2]:.3f}, reward={reward:.3f}")
