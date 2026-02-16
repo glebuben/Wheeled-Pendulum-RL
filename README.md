@@ -106,9 +106,13 @@ WheelPoleSystem(rod_length=1.0, wheel_radius=0.2, wheel_mass=1.0,
 #### Methods
 
 - `set_initial_state(phi, phi_dot, theta, theta_dot)` - Set initial conditions
-- `step(action)` - Apply torque and simulate one time step
-  - **Parameters**: `action` (float) - Torque in N⋅m
-  - **Returns**: Current state as numpy array [phi, phi_dot, theta, theta_dot]
+- `step(action, reward_func=None)` - Apply torque and simulate one time step
+  - **Parameters**: 
+    - `action` (float) - Torque in N⋅m
+    - `reward_func` (callable, optional) - Function with signature `reward_func(prev_state, action, new_state) -> float`. Default returns -1.
+  - **Returns**: Tuple of (state, reward)
+    - `state` (np.ndarray) - Current state [phi, phi_dot, theta, theta_dot]
+    - `reward` (float) - Computed reward value
   
 - `get_state()` - Get current state
   - **Returns**: numpy array [phi, phi_dot, theta, theta_dot]
