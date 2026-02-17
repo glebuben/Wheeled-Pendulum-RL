@@ -9,19 +9,33 @@ The system consists of:
 - A **pole** attached to the wheel that can swing (generalized coordinate: θ)
 - The control input is a **torque** applied to the wheel
 
-The dynamics are derived from Lagrangian mechanics, with the key difference from cartpole being that horizontal displacement x = R·φ (where R is wheel radius).
+The dynamics are derived from Lagrangian mechanics,  with the key difference from CartPole being the horizontal displacement  
+`x = R·φ`, where R is the wheel radius.
 
-## Files
 
-1. **wheel_pole_system.py** - Core physics engine
-2. **wheel_pole_simulation.py** - Interactive pygame visualization
-3. **README.md** - This file
+
+## Project Structure
+
+```text
+Wheeled-Pendulum-RL/
+│
+├── src/
+│   ├── wheel_pole_system.py      # Core physics engine
+│   └── wheel_pole_simulation.py  # Interactive pygame visualization
+│
+├── environment.yml               # Conda environment specification
+└── README.md                     # Project documentation
+```
 
 ## Installation
 
-Required dependencies:
 ```bash
-pip install numpy scipy pygame
+git clone https://github.com/glebuben/Wheeled-Pendulum-RL.git
+cd Wheeled-Pendulum-RL
+
+conda env create -f environment.yml
+conda activate willed_pendulum
+
 ```
 
 ## Usage
@@ -68,30 +82,44 @@ for i in range(1000):
 
 Run the interactive simulation:
 ```bash
-python wheel_pole_simulation.py
+python src/wheel_pole_simulation.py
 ```
 
-**Controls:**
-- **LEFT/RIGHT arrows**: Apply torque to the wheel
-- **SPACE**: Start/Stop simulation
-- **R**: Reset system to initial conditions
-- **T**: Toggle pole trajectory trace
-- **Mouse drag sliders**: Adjust parameters and initial conditions (disabled while running)
-- **Mouse drag wheel center (blue node)**: Directly change φ angle (disabled while running)
-- **Mouse drag pole end (red node)**: Directly change θ angle (disabled while running)
+### Controls
 
-**Features:**
-- Sliders are frozen while simulation is running to prevent parameter changes during execution
-- Direct manipulation of system state by dragging the wheel center or pole end nodes
-- Real-time visual feedback with node highlighting during drag operations
+- **← / →** — apply torque to the wheel  
+- **Space** — start / stop simulation  
+- **R** — reset to initial conditions  
+- **T** — toggle pole trajectory trace  
 
-**Adjustable Parameters:**
-- Rod length (0.5 - 2.0 m)
-- Wheel radius (0.1 - 0.5 m)
-- Wheel mass (0.5 - 3.0 kg)
-- Pole mass (0.05 - 0.5 kg)
-- Initial φ (wheel angle)
-- Initial θ (pole angle)
+**Mouse interactions**
+
+- Drag sliders — adjust parameters *(disabled while running)*  
+- Drag wheel center *(blue node)* — change φ angle  
+- Drag pole end *(red node)* — change θ angle  
+
+
+### Features
+
+- Parameters are locked during simulation to ensure stability  
+- Direct manipulation of system state via draggable nodes  
+- Real-time visual feedback with node highlighting
+
+
+### Adjustable Parameters
+
+**Physical parameters**
+
+- Rod length: **0.5 – 2.0 m**
+- Wheel radius: **0.1 – 0.5 m**
+- Wheel mass: **0.5 – 3.0 kg**
+- Pole mass: **0.05 – 0.5 kg**
+
+**Initial conditions**
+
+- Initial φ — wheel angle  
+- Initial θ — pole angle
+
 
 ## API Reference
 
@@ -130,40 +158,54 @@ WheelPoleSystem(rod_length=1.0, wheel_radius=0.2, wheel_mass=1.0,
 
 ## State Variables
 
-- **φ (phi)**: Wheel rotation angle (rad)
-- **φ_dot**: Wheel angular velocity (rad/s)
-- **θ (theta)**: Pole angle from vertical, 0 = upright (rad)
-- **θ_dot**: Pole angular velocity (rad/s)
+| Variable | Description | Units |
+|----------|------------|-------|
+| φ | Wheel rotation angle | rad |
+| φ̇ | Wheel angular velocity | rad/s |
+| θ | Pole angle from vertical (0 = upright) | rad |
+| θ̇ | Pole angular velocity | rad/s |
 
-## Physics Notes
 
-The equations of motion are derived from the Lagrangian:
+## Physics Model
 
-```
-L = T - V
+The system dynamics are derived using the Lagrangian formulation.
 
-where:
-T = Kinetic energy = (1/2)*I_w*φ_dot² + (1/2)*m_w*v_wheel² + (1/2)*I_b*θ_dot² + (1/2)*m_b*v_cm²
-V = Potential energy = m_b*g*h_cm
+<p align="center">
+<img src="https://latex.codecogs.com/svg.image?\color{white}\Large%20L=T-V" />
+</p>
 
-with:
-- I_w = (1/2)*m_w*r² (moment of inertia of wheel, solid cylinder)
-- I_b = (1/3)*m_b*l² (moment of inertia of rod about its end)
-- v_wheel: velocity of wheel center due to rotation
-- v_cm: velocity of rod's center of mass
-```
+<p align="center">
+<img src="https://latex.codecogs.com/svg.image?\color{white}\Large%20T=\frac{1}{2}I_w\dot{\phi}^2+\frac{1}{2}m_wv_{wheel}^2+\frac{1}{2}I_b\dot{\theta}^2+\frac{1}{2}m_bv_{cm}^2" />
+</p>
 
-This results in the coupled equations of motion:
+<p align="center">
+<img src="https://latex.codecogs.com/svg.image?\color{white}\Large%20V=m_bg\,h_{cm}" />
+</p>
 
-**Equation 1 (θ dynamics):**
-```
-(I_b + l²·m_b)·θ̈ + l·m_b·r·cos(θ)·φ̈ = g·l·m_b·sin(θ)
-```
+**Parameters**
 
-**Equation 2 (φ dynamics):**
-```
-[I_w + m_b·r² + m_w·r²]·φ̈ + m_b·r·l·cos(θ)·θ̈ = τ + m_b·r·l·sin(θ)·θ̇²
-```
+- **I_w = ½ m_w r²** — wheel inertia (solid cylinder)  
+- **I_b = ⅓ m_b l²** — rod inertia about its end  
+- **v_wheel** — velocity of wheel center  
+- **v_cm** — velocity of rod center of mass
+
+
+---
+
+These expressions lead to the coupled equations of motion:
+
+### θ dynamics
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.image?\color{white}\Large(I_b+m_bl^2)\ddot{\theta}+m_blr\cos(\theta)\ddot{\phi}=m_bgl\sin(\theta)" />
+</p>
+
+### φ dynamics
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.image?\color{white}\Large(I_w+m_br^2+m_wr^2)\ddot{\phi}+m_brl\cos(\theta)\ddot{\theta}=\tau+m_brl\sin(\theta)\dot{\theta}^2" />
+</p>
+
 
 These are coupled second-order ODEs that are integrated using scipy's odeint.
 
