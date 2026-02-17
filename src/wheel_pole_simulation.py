@@ -62,11 +62,12 @@ class WheelPoleSimulation:
         
         # Control
         self.torque = 0.0
-        self.max_torque = 0.1
+        # self.max_torque = 0.1
+        self.max_torque = 0.5
         
         # Simulation state
         self.running = False
-        self.show_trace = True
+        self.show_trace = False
         self.trace_points = []
         self.max_trace_points = 500
         
