@@ -165,6 +165,7 @@ torch.save(
             "gamma": gamma,
             "lr": lr,
             "num_updates": num_updates,
+            "action_bound": policy.action_bound,
         },
     },
     ckpt_path,
