@@ -10,3 +10,5 @@ dependencies:
   - pygame
   - numba
   - tqdm
+  - argparse
+  - pyyaml
