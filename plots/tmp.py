@@ -2,7 +2,9 @@ import torch
 from src.policy_network import PolicyNetwork
 import matplotlib.pyplot as plt
 
-loaded_checkpoint = torch.load("checkpoints/checkpoint_20260217_213154_a151c357.pt")
+ckpt_path = "checkpoints/checkpoint_20260218_063022_7f7c7c67.pt"
+
+loaded_checkpoint = torch.load(ckpt_path)
 
 average_return_history = loaded_checkpoint["average_return_history"]
 policy_state_dict = loaded_checkpoint["policy_state_dict"]
