@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.integrate import odeint
 
 
 class WheelPoleSystem:
@@ -137,7 +136,7 @@ class WheelPoleSystem:
     
     def step(self, action, reward_func=lambda prev_state, action, new_state: -1):
         """
-        Apply an action (torque) and simulate one time step.
+        Apply an action (torque) and simulate one time step using forward Euler.
         
         Parameters:
         -----------
@@ -154,12 +153,15 @@ class WheelPoleSystem:
         reward : float
             Reward value computed by reward_func
         """
-        # Integrate the equations of motion
-        t_span = [0, self.dt]
-        solution = odeint(self._dynamics, self.state, t_span, args=(action,))
-        
         prev_state = self.state.copy()
-        self.state = solution[-1]
+        
+        # Compute derivatives using forward Euler (much faster than odeint)
+        # state_dot = [phi_dot, phi_ddot, theta_dot, theta_ddot]
+        state_dot = self._dynamics(self.state, 0, action)
+        
+        # Forward Euler step: state_new = state_old + dt * state_dot
+        self.state = self.state + self.dt * np.array(state_dot)
+        
         self.time += self.dt
         self.step_count += 1
         

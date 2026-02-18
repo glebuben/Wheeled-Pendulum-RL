@@ -14,7 +14,7 @@ from src.policy_network import PolicyNetwork
 def upright_reward(prev_state, action, new_state):
     """Reward function: cos(theta) where theta=0 is upright."""
     theta = new_state[2]
-    return float(np.cos(theta))
+    return float(np.cos(8 * theta))
 
 
 def compute_returns(rewards, gamma):
@@ -78,7 +78,7 @@ def train_reinforce(
             start_time = time.time()
             
             # Reset all environments at once with random initial perturbations
-            init_thetas = 0.05 * (np.random.rand(batch_size).astype(np.float32) - 0.5)
+            init_thetas = 0.2 * (np.random.rand(batch_size).astype(np.float32) - 0.5)
             system.reset(phi=0.0, theta=init_thetas)
             
             # Collect trajectories (all episodes in parallel)
@@ -193,23 +193,23 @@ def train_reinforce(
             average_return_history.append(avg_return)
             
             # Periodic checkpoint saving
-            if update_idx % save_freq == 0:
-                periodic_ckpt_path = os.path.join(
-                    checkpoint_dir, 
-                    f"checkpoint_update{update_idx}_{run_id}_{uniq}.pt"
-                )
-                torch.save(
-                    {
-                        "policy_state_dict": policy_net.state_dict(),
-                        "optimizer_state_dict": optimizer.state_dict(),
-                        "average_return_history": average_return_history,
-                        "best_avg_return": best_avg_return,
-                        "best_policy_state": best_policy_state,
-                        "update_idx": update_idx,
-                    },
-                    periodic_ckpt_path,
-                )
-                print(f"  → Saved periodic checkpoint to {periodic_ckpt_path}")
+            # if update_idx % save_freq == 0:
+            #     periodic_ckpt_path = os.path.join(
+            #         checkpoint_dir, 
+            #         f"checkpoint_update{update_idx}_{run_id}_{uniq}.pt"
+            #     )
+            #     torch.save(
+            #         {
+            #             "policy_state_dict": policy_net.state_dict(),
+            #             "optimizer_state_dict": optimizer.state_dict(),
+            #             "average_return_history": average_return_history,
+            #             "best_avg_return": best_avg_return,
+            #             "best_policy_state": best_policy_state,
+            #             "update_idx": update_idx,
+            #         },
+            #         periodic_ckpt_path,
+            #     )
+            #     print(f"  → Saved periodic checkpoint to {periodic_ckpt_path}")
 
     except KeyboardInterrupt:
         print("\n" + "="*60)
@@ -241,7 +241,7 @@ if __name__ == "__main__":
         observation_dim=4,
         hidden_dim=128,
         action_dim=1,
-        action_bound=10.0
+        action_bound=3.0
     )
 
     print(f"Training with {trajectories_per_update} parallel environments...")

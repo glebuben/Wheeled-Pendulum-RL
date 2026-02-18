@@ -4,8 +4,8 @@ import torch
 import sys
 import os
 from pathlib import Path
-from wheel_pole_system import WheelPoleSystem
-from policy_network import PolicyNetwork
+from src.systems.wheel_pole_system import WheelPoleSystem
+from src.policy_network import PolicyNetwork
 
 
 class PolicyVisualizer:
