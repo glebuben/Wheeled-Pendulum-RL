@@ -47,7 +47,7 @@ git clone https://github.com/glebuben/Wheeled-Pendulum-RL.git
 cd Wheeled-Pendulum-RL
 
 conda env create -f environment.yml
-conda activate willed_pendulum
+conda activate wheeled_pendulum
 
 ```
 
@@ -82,23 +82,33 @@ system.set_initial_state(
 
 Run the interactive simulation:
 ```bash
-python -m src.wheel_pole_simulation
+python src/wheel_pole_simulation.py
 ```
 
-Run training:
+## Training
+
+To train the policy using the vectorized REINFORCE algorithm:
 ```bash
-python -m src.reinforce_vectorized -c CONFIG_PATH
+python src/reinforce_vectorized.py
 ```
 
-Visualize policy:
+
+After training:
+
+- trained models are saved to `checkpoints/`
+- training curves are saved to `plots/`
+
+
+## Evaluation
+
+To visualize and evaluate a trained policy:
 ```bash
-python -m src.policy_visualizer CKPT_PATH
+python src/policy_visualizer.py
 ```
 
-Plot performance:
-```bash
-python -m plots.make_plot --checkpoint CKPT_PATH
-```
+
+This script loads the trained model and runs a rollout of the balancing policy.
+
 
 ### Controls
 
@@ -146,6 +156,31 @@ WheelPoleSystem(rod_length=1.0, wheel_radius=0.2, wheel_mass=1.0,
                 pole_mass=0.1, gravity=9.81, dt=0.02)
 ```
 
+#### Methods
+
+- `set_initial_state(phi, phi_dot, theta, theta_dot)` - Set initial conditions
+- `step(action, reward_func=None)` - Apply torque and simulate one time step
+  - **Parameters**: 
+    - `action` (float) - Torque in N⋅m
+    - `reward_func` (callable, optional) - Function with signature `reward_func(prev_state, action, new_state) -> float`. If no reward function is provided, a default balancing reward is used.
+  - **Returns**: Tuple of (state, reward)
+    - `state` (np.ndarray) - Current state [phi, phi_dot, theta, theta_dot]
+    - `reward` (float) - Computed reward value
+  
+- `get_state()` - Get current state
+  - **Returns**: numpy array [phi, phi_dot, theta, theta_dot]
+  
+- `get_current_step()` - Get current simulation step number
+  - **Returns**: int
+  
+- `get_time()` - Get current simulation time
+  - **Returns**: float (seconds)
+  
+- `get_cartesian_positions()` - Get positions for visualization
+  - **Returns**: ((wheel_x, wheel_y), (pole_end_x, pole_end_y))
+  
+- `reset()` - Reset system to zero state
+
 ## State Variables
 
 | Variable | Description | Units |
@@ -154,6 +189,36 @@ WheelPoleSystem(rod_length=1.0, wheel_radius=0.2, wheel_mass=1.0,
 | φ̇ | Wheel angular velocity | rad/s |
 | θ | Pole angle from vertical (0 = upright) | rad |
 | θ̇ | Pole angular velocity | rad/s |
+
+## Episode Termination
+
+An episode terminates if:
+
+- |θ| > 60° (pole falls)
+- numerical instability occurs
+
+## Reward Function
+
+The default reward encourages upright balance:
+
+r = cos(θ) − 0.001 τ²
+
+where:
+
+- cos(θ) rewards upright position
+- torque penalty encourages energy efficiency
+
+### Terminal penalty
+
+- pole falls → reward = −100
+
+
+## Episode Truncation
+
+An episode is truncated if:
+
+- max_steps reached (default: 1000)
+- time limit exceeded
 
 
 ## Physics Model
@@ -199,3 +264,41 @@ These expressions lead to the coupled equations of motion:
 
 These are coupled second-order ODEs that are integrated using scipy's odeint.
 
+## Use Cases
+
+This system is ideal for:
+- Reinforcement learning projects (policy gradient, Q-learning, etc.)
+- Control theory experiments (PID, LQR, MPC)
+- Understanding nonlinear dynamics
+- Testing balance control algorithms
+
+## Example RL Integration
+
+```python
+import numpy as np
+from wheel_pole_system import WheelPoleSystem
+
+# Create environment
+env = WheelPoleSystem(rod_length=1.0, wheel_radius=0.2)
+reward_func  = lambda prev_state, action, new_state: np.cos(new_state[2])
+
+# RL training loop
+for episode in range(num_episodes):
+    env.set_initial_state(theta=np.random.uniform(-0.2, 0.2))
+    
+    for step in range(max_steps):
+        state = env.get_state()
+        
+        # Your policy network
+        action = policy(state)  # Returns torque
+        
+        # Step environment
+        next_state, reward = env.step(action, reward_func)
+
+        # Store transition, update policy, etc.
+        # ...
+```
+
+## License
+
+Free to use for educational and research purposes.
