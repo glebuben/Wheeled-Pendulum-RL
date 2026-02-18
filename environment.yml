@@ -10,4 +10,3 @@ dependencies:
   - pygame
   - numba
   - tqdm
-  - pip
