@@ -20,11 +20,24 @@ The dynamics are derived from Lagrangian mechanics,  with the key difference fro
 Wheeled-Pendulum-RL/
 │
 ├── src/
-│   ├── wheel_pole_system.py      # Core physics engine
-│   └── wheel_pole_simulation.py  # Interactive pygame visualization
+│   ├── systems/
+│   │   ├── wheel_pole_system.py        # Core dynamics model
+│   │   └── numba_wheel_pole_system.py  # Accelerated (Numba) dynamics
+│   │
+│   ├── policy_network.py               # Neural network policy
+│   ├── reinforce_vectorized.py         # Vectorized REINFORCE training
+│   ├── policy_visualizer.py            # Policy behaviour visualization
+│   └── wheel_pole_simulation.py        # Interactive simulation (pygame)
 │
-├── environment.yml               # Conda environment specification
-└── README.md                     # Project documentation
+├── checkpoints/                        # Saved trained models
+│   └── best_*.pt
+│
+├── plots/                              # Training curves & debug plots
+│   └── tmp.py
+│
+├── environment.yml                     # Conda environment
+└── README.md                           # Project documentation
+
 ```
 
 ## Installation
