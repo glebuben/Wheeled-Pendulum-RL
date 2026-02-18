@@ -76,26 +76,28 @@ system.set_initial_state(
     theta_dot=0.0   # Initial pole angular velocity (rad/s)
 )
 
-# Run simulation
-for i in range(1000):
-    torque = 0.0  # Control input (N⋅m)
-    state = system.step(torque)
-    
-    # Get state: [phi, phi_dot, theta, theta_dot]
-    phi, phi_dot, theta, theta_dot = state
-    
-    # Get current step number
-    step = system.get_current_step()
-    
-    # Your RL algorithm here
-    # ...
 ```
 
 ### 2. Interactive Simulation (wheel_pole_simulation.py)
 
 Run the interactive simulation:
 ```bash
-python src/wheel_pole_simulation.py
+python -m src.wheel_pole_simulation
+```
+
+Run training:
+```bash
+python -m src.reinforce_vectorized -c CONFIG_PATH
+```
+
+Visualize policy:
+```bash
+python -m src.policy_visualizer CKPT_PATH
+```
+
+Plot performance:
+```bash
+python -m plots.make_plot --checkpoint CKPT_PATH
 ```
 
 ### Controls
@@ -143,31 +145,6 @@ python src/wheel_pole_simulation.py
 WheelPoleSystem(rod_length=1.0, wheel_radius=0.2, wheel_mass=1.0, 
                 pole_mass=0.1, gravity=9.81, dt=0.02)
 ```
-
-#### Methods
-
-- `set_initial_state(phi, phi_dot, theta, theta_dot)` - Set initial conditions
-- `step(action, reward_func=None)` - Apply torque and simulate one time step
-  - **Parameters**: 
-    - `action` (float) - Torque in N⋅m
-    - `reward_func` (callable, optional) - Function with signature `reward_func(prev_state, action, new_state) -> float`. Default returns -1.
-  - **Returns**: Tuple of (state, reward)
-    - `state` (np.ndarray) - Current state [phi, phi_dot, theta, theta_dot]
-    - `reward` (float) - Computed reward value
-  
-- `get_state()` - Get current state
-  - **Returns**: numpy array [phi, phi_dot, theta, theta_dot]
-  
-- `get_current_step()` - Get current simulation step number
-  - **Returns**: int
-  
-- `get_time()` - Get current simulation time
-  - **Returns**: float (seconds)
-  
-- `get_cartesian_positions()` - Get positions for visualization
-  - **Returns**: ((wheel_x, wheel_y), (pole_end_x, pole_end_y))
-  
-- `reset()` - Reset system to zero state
 
 ## State Variables
 
@@ -222,41 +199,3 @@ These expressions lead to the coupled equations of motion:
 
 These are coupled second-order ODEs that are integrated using scipy's odeint.
 
-## Use Cases
-
-This system is ideal for:
-- Reinforcement learning projects (policy gradient, Q-learning, etc.)
-- Control theory experiments (PID, LQR, MPC)
-- Understanding nonlinear dynamics
-- Testing balance control algorithms
-
-## Example RL Integration
-
-```python
-import numpy as np
-from wheel_pole_system import WheelPoleSystem
-
-# Create environment
-env = WheelPoleSystem(rod_length=1.0, wheel_radius=0.2)
-refward_func = lambda prev_state, action, new_state: np.cos(new_state[2])
-
-# RL training loop
-for episode in range(num_episodes):
-    env.set_initial_state(theta=np.random.uniform(-0.2, 0.2))
-    
-    for step in range(max_steps):
-        state = env.get_state()
-        
-        # Your policy network
-        action = policy(state)  # Returns torque
-        
-        # Step environment
-        next_state, reward = env.step(action, reward_func)
-
-        # Store transition, update policy, etc.
-        # ...
-```
-
-## License
-
-Free to use for educational and research purposes.

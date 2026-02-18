@@ -1,0 +1,26 @@
+# Configuration for reinforce_vectorized.py
+
+# Top-level training hyperparameters
+trajectories_per_update: 256
+max_seq_len: 300
+gamma: 0.99
+lr: 0.003
+num_updates: 10000
+save_freq: 100
+checkpoint_dir: checkpoints
+device: null
+
+# Environment-specific parameters
+env:
+  rod_length: 1.0
+  wheel_radius: 0.2
+  wheel_mass: 1.0
+  pole_mass: 0.1
+  dt: 0.02
+
+# Policy network parameters
+policy:
+  observation_dim: 4
+  hidden_dim: 128
+  action_dim: 1
+  action_bound: 3.0
